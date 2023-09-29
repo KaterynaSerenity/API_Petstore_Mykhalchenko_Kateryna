@@ -1,0 +1,151 @@
+--1
+SELECT department_name,
+CASE
+WHEN location_id = 1700 THEN 'Washington'
+WHEN location_id = 1400 THEN 'Texas'
+WHEN location_id = 1500 THEN 'California'
+WHEN location_id = 2500 THEN 'California'
+WHEN location_id = 1800 THEN 'Ontario'
+WHEN location_id = 2400 THEN 'Other'
+WHEN location_id = 2700 THEN 'Bavaria'
+END AS State
+FROM departments;
+
+--2
+SELECT COUNT(location_id), country_id
+FROM locations
+GROUP BY country_id
+ORDER BY COUNT(location_id) DESC;
+
+--3
+SELECT COUNT(location_id), country_id
+FROM locations
+GROUP BY country_id
+HAVING COUNT(location_id) > 2
+ORDER BY COUNT(location_id) DESC;
+
+--4
+SELECT locations.street_address, locations.state_province, countries.country_name
+FROM locations
+JOIN countries
+ON locations.country_id = countries.country_id;
+
+--5
+SELECT COUNT(locations.street_address), countries.country_name
+FROM locations
+FULL JOIN countries
+ON locations.country_id = countries.country_id
+GROUP BY countries.country_name;
+
+--6
+SELECT locations.state_province, countries.country_name, regions.region_name
+FROM locations
+FULL JOIN countries
+ON locations.country_id =  countries.country_id
+FULL JOIN regions
+ON countries.region_id =  regions.region_id;
+
+--7
+SELECT COUNT(locations.street_address), COUNT(countries.country_name), regions.region_name
+FROM locations
+JOIN countries
+ON locations.country_id =  countries.country_id
+FULL JOIN regions
+ON countries.region_id =  regions.region_id
+GROUP BY regions.region_name;
+
+--8
+SELECT COUNT(locations.street_address) AS amount_by_street_address, 
+COUNT(countries.country_name) AS amount_by_country_name, regions.region_name AS region
+FROM locations
+JOIN countries
+ON locations.country_id =  countries.country_id
+JOIN regions
+ON countries.region_id =  regions.region_id
+GROUP BY regions.region_name;
+
+--9
+SELECT regions.region_name, COUNT(locations.street_address), COUNT(countries.country_name) 
+FROM regions
+JOIN countries
+ON regions.region_id = countries.region_id
+JOIN locations
+ON locations.country_id = countries.country_id
+GROUP BY regions.region_name
+HAVING COUNT(countries.country_name) > 6;
+
+--10
+SELECT regions.region_name AS region, COUNT(locations.street_address) AS amount_by_street_address, COUNT(countries.country_name) AS amount_by_country_name
+FROM regions
+JOIN countries
+ON regions.region_id = countries.region_id
+JOIN locations
+ON locations.country_id = countries.country_id
+GROUP BY regions.region_name
+HAVING COUNT(countries.country_name) > 6;
+
+--11
+SELECT employee_id, hire_date, null AS end_date  FROM employees
+UNION
+SELECT employee_id, start_date, end_date FROM job_history;
+
+--12
+SELECT 'current_employees' AS status, COUNT (employee_id) FROM employees
+UNION
+SELECT 'fired_emloyees' AS status, COUNT (employee_id) FROM job_history;
+
+--13
+SELECT job_id, 'current_employees' AS status, COUNT (employee_id) FROM employees
+GROUP BY job_id
+UNION
+SELECT job_id, 'fired_emloyees' AS status, COUNT (employee_id) FROM job_history
+GROUP BY job_id;
+
+--14
+SELECT department_id, COUNT (employee_id) 
+FROM employees
+WHERE department_id IN (SELECT department_id FROM job_history
+GROUP BY department_id
+HAVING COUNT (department_id) > 1)
+GROUP BY department_id
+ORDER BY COUNT (employee_id) DESC;
+
+--15
+SELECT employee_id, first_name, last_name
+FROM employees
+WHERE department_id IN (SELECT department_id FROM job_history
+WHERE end_date - start_date < 365);
+
+--16
+SELECT employee_id, first_name, last_name
+FROM employees
+WHERE department_id IN (SELECT department_id FROM job_history
+WHERE end_date - start_date > 365
+UNION
+SELECT department_id FROM employees
+WHERE SYSDATE - hire_date > 365);
+
+--17
+SELECT department_id, COUNT (employee_id)
+FROM employees
+WHERE department_id IN (SELECT department_id FROM job_history
+WHERE end_date - start_date > 365
+UNION
+SELECT department_id FROM employees
+WHERE SYSDATE - hire_date > 365)
+GROUP BY department_id
+ORDER BY COUNT (employee_id) DESC;
+
+--18
+INSERT INTO employees (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, EMAIL,PHONE_NUMBER, HIRE_DATE, JOB_ID, SALARY, COMMISSION_PCT, MANAGER_ID, DEPARTMENT_ID)
+VALUES (6767, 'Kateryna', 'Mykhalchenko', 'someemail', '9283756', '16-AUG-23', 'PU_MAN', 25000, null, 205, 110);
+
+--19
+UPDATE employees
+SET salary = 30000
+WHERE employee_id = 6767;
+
+--20
+DELETE
+FROM employees
+WHERE employee_id = 6767;
